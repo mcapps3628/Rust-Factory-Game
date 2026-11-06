@@ -14,6 +14,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .init_resource::<grid_system::Grid>()
         .init_resource::<score_system::Score>()
+        .init_resource::<place_system::BuildMode>()
         .add_systems(Startup, setup)
         .add_systems(Update, place_system::mouse_place_tile)
         .run();

@@ -5,18 +5,27 @@ use crate::grid_system::{place_tile, world_to_grid, Grid};
 use crate::score_system::Score;
 use crate::tile_system::TileType;
 
+#[derive(Resource, Default)]
+pub struct BuildMode(pub bool);
+
 pub fn mouse_place_tile(
     mut commands: Commands,
     mouse: Res<ButtonInput<MouseButton>>,
+    key: Res<ButtonInput<KeyCode>>,
     window: Single<&Window, With<PrimaryWindow>>,
     camera: Single<(&Camera, &GlobalTransform), With<Camera2d>>,
     mut grid: ResMut<Grid>,
     mut score: ResMut<Score>,
+    mut build_mode: ResMut<BuildMode>,
 ) {
-    if !mouse.just_pressed(MouseButton::Left) {
-        return;
+    if key.just_pressed(KeyCode::ShiftRight) {
+        build_mode.0 = !build_mode.0;
     }
 
+    // 4. Guard clauses: check both build mode and mouse input
+    if !build_mode.0 || !mouse.just_pressed(MouseButton::Left) {
+        return;
+    }
     // Cursor position in window (pixel) coordinates; None if the cursor is outside the window
     let Some(cursor_pos) = window.cursor_position() else {
         return;

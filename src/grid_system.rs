@@ -41,7 +41,7 @@ pub fn place_tile(
         return false;
     }
 
-    // Build the tile's data first so we can read its cost
+    // Build the tile's data
     let processor = match tile_type {
         TileType::Tile1 => Processor::tile1(),
     };
