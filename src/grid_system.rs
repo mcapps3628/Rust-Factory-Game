@@ -1,10 +1,10 @@
 use bevy::prelude::*;
 use crate::score_system::Score;
 use crate::tile_system::TileType;
-use crate::processor_tile::spawn_processor;
+use crate::processor_tile::{spawn_processor, Processor};
 
-pub const GRID_WIDTH: u32 = 16;
-pub const GRID_HEIGHT: u32 = 16;
+pub const GRID_WIDTH: u32 = 32;
+pub const GRID_HEIGHT: u32 = 32;
 pub const TILE_SIZE: u32 = 64;
 
 #[derive(Resource)]
@@ -28,7 +28,7 @@ pub struct GridSlot {
 pub fn place_tile(
     commands: &mut Commands,
     grid: &mut Grid,
-    _score: &mut Score, // TODO: charge the tile's cost
+    score: &mut Score,
     tile_type: TileType,
     grid_pos: IVec2,
 ) -> bool {
@@ -36,18 +36,26 @@ pub fn place_tile(
         return false;
     }
 
-    // TODO: Add buy check
-
     let (x, y) = (grid_pos.x as usize, grid_pos.y as usize);
     if grid.matrix[y][x].is_some() {
         return false;
     }
 
-    let world_pos = grid_to_world(grid_pos);
-    let entity = match tile_type {
-        TileType::Tile1 => spawn_processor(commands, world_pos),
+    // Build the tile's data first so we can read its cost
+    let processor = match tile_type {
+        TileType::Tile1 => Processor::tile1(),
     };
 
+    // Buy check
+    let cost = processor.cost;
+    if score.money < cost {
+        return false;
+    }
+
+    let world_pos = grid_to_world(grid_pos);
+    let entity = spawn_processor(commands, processor, world_pos);
+
+    score.money -= cost;
     grid.matrix[y][x] = Some(GridSlot { tile_type, entity });
     true
 }
